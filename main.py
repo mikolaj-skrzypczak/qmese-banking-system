@@ -21,7 +21,7 @@ class Bank:
         self.customers: List[Customer] = []
         self.active_sessions: dict[str, Customer] = {}
 
-    def create_account(self, account_type: str = "Savings", initial_balance: float = 0) -> Customer:
+    def create_account(self, account_type: str = "Normal", initial_balance: float = 0) -> Customer:
         account_number = str(random.randint(10000, 99999))
         if account_type == "Normal":
             account = NormalAccount(account_number, initial_balance)
@@ -113,13 +113,7 @@ class NormalAccount(Account):
             print("Invalid withdrawal amount or insufficient funds.")
 
     def calculate_interest(self, rate: float) -> None:
-        if not self.is_locked:
-            interest = self.balance * rate / 100
-            self.balance += interest
-            self.transactions.append(Transaction("Interest", interest, datetime.datetime.now()))
-            print(f"Interest added: ${interest}. New balance: ${self.balance}")
-        else:
-            print("Account is locked. Cannot calculate interest.")
+        print("Normal accounts do not earn interest.")
 
 
 class DebitAccount(Account):
