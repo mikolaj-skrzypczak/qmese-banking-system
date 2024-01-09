@@ -131,6 +131,61 @@ class DebitAccount(Account):
         print("Debit accounts do not earn interest.")
 
 
+class SavingsAccount:
+    def __init__(self, account_number: str, balance: float = 0) -> None:
+        self.account_number = account_number
+        self.balance = balance
+        self.is_locked = False
+        self.transactions = []
+
+    def deposit(self, amount: float) -> None:
+        if not self.is_locked and amount > 0:
+            self.balance += amount
+            self.transactions.append(Transaction("Deposit", amount, datetime.datetime.now()))
+            print(f"Deposited ${amount}. New balance: ${self.balance}")
+        elif self.is_locked:
+            print("Account is locked. Cannot perform transactions.")
+        else:
+            print("Invalid deposit amount.")
+
+    def withdrawal(self, amount: float) -> None:
+        if self.is_locked:
+            self.balance -= amount
+            self.transactions.append(Transaction("Withdrawal", amount, datetime.datetime.now()))
+            print(f"Withdrew ${amount}. New balance: ${self.balance}")
+        elif self.is_locked:
+            print("Account is locked. Cannot perform transactions.")
+        else:
+            print("Invalid withdrawal amount or insufficient funds.")
+
+    def get_balance(self):
+        return self.balance
+
+    def lock_account(self) -> None:
+        self.is_locked = True
+        print("Account locked.")
+
+    def unlock_account(self) -> None:
+        self.is_locked = False
+        print("Account unlocked.")
+
+    def view_transactions(self) -> None:
+        if self.is_locked:
+            for transaction in self.transactions:
+                print(transaction)
+        else:
+            print("Account is locked. Cannot view transactions.")
+
+    def calculate_interest(self, rate):
+        if not self.is_locked:
+            interest = self.balance + rate / 100
+            self.balance += interest
+            self.transactions.append(Transaction("Interest", interest, datetime.datetime.now()))
+            print(f"Interest added: ${interest}. New balance: ${self.balance}")
+        else:
+            print("Account is locked. Cannot calculate interest.")
+
+
 class Customer:
     def __init__(self, account_number: str, account: Account) -> None:
         self.account_number = account_number
@@ -160,11 +215,13 @@ bank = Bank()
 customer1 = bank.create_account("Normal", 1000)
 customer2 = bank.create_account("Normal", 500)
 customer3 = bank.create_account("Debit", 1500)
+customer4 = bank.create_account("Savings", 1500)
 
 # Authenticate customers
 session_token1 = bank.authenticate_customer(customer1.account_number, customer1.pin)
 session_token2 = bank.authenticate_customer(customer2.account_number, customer2.pin)
 session_token3 = bank.authenticate_customer(customer3.account_number, customer3.pin)
+session_token4 = bank.authenticate_customer(customer4.account_number, customer4.pin)
 
 # Deposit and withdraw
 customer1.account.deposit(500)
@@ -172,6 +229,7 @@ customer1.account.withdraw(200)
 
 customer2.account.deposit(1000)
 customer2.account.withdraw(200)
+customer4.account.withdraw(300)
 
 # Transfer funds
 customer1.transfer(customer2.account, 300)
@@ -185,6 +243,7 @@ print(f"{customer3.account_number}'s balance: ${customer3.account.get_balance()}
 customer1.account.calculate_interest(2.5)
 customer2.account.calculate_interest(1.5)
 customer3.account.calculate_interest(3.0)
+customer4.account.calculate_interest(2.0)
 
 # Lock and unlock account
 customer1.account.lock_account()
@@ -193,6 +252,7 @@ customer2.account.unlock_account()
 # View transactions
 customer1.account.view_transactions()
 customer2.account.view_transactions()
+customer4.account.view_transactions()
 
 # Withdraw with overdraft protection (not applicable for DebitAccount)
 customer3.account.withdraw(1800, overdraft_protection=True)
@@ -201,3 +261,4 @@ customer3.account.withdraw(1800, overdraft_protection=True)
 bank.end_session(session_token1)
 bank.end_session(session_token2)
 bank.end_session(session_token3)
+bank.end_session(session_token4)
